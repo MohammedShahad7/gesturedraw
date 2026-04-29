@@ -25,79 +25,86 @@ export default function App() {
       );
 
       handRef.current =
-        await HandLandmarker.createFromOptions(
-          vision,
-          {
-            baseOptions: {
-              modelAssetPath:
-                "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task",
-            },
-            numHands: 1,
-            runningMode: "VIDEO",
-          }
-        );
+        await HandLandmarker.createFromOptions(vision, {
+          baseOptions: {
+            modelAssetPath:
+              "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task",
+          },
+          numHands: 1,
+          runningMode: "VIDEO",
+        });
 
-      interval = setInterval(runDetection, 33);
+      interval = setInterval(runDetection, 30);
     };
 
     const runDetection = async () => {
-  const video = webcamRef.current?.video;
+      const video = webcamRef.current?.video;
+      const canvas = canvasRef.current;
 
-  if (video && video.readyState === 4 && handRef.current) {
-    const results = handRef.current.detectForVideo(
-      video,
-      performance.now()
-    );
+      if (
+        video &&
+        video.readyState === 4 &&
+        handRef.current &&
+        canvas
+      ) {
+        const results =
+          handRef.current.detectForVideo(
+            video,
+            performance.now()
+          );
 
-    if (results.landmarks && results.landmarks.length > 0) {
-      const finger = results.landmarks[0][8];
+        if (
+          results.landmarks &&
+          results.landmarks.length > 0
+        ) {
+          const finger =
+            results.landmarks[0][8];
 
-      // REAL DISPLAY SIZE (IMPORTANT FIX)
-      const width = video.clientWidth;
-      const height = video.clientHeight;
+          const width = video.clientWidth;
+          const height = video.clientHeight;
 
-      // Convert coordinates properly
-      let x = finger.x * width;
-      let y = finger.y * height;
+          let x = finger.x * width;
+          let y = finger.y * height;
 
-      // FIX MIRROR (because mirrored=true)
-      x = width - x;
+          x = width - x;
 
-      // Smooth movement
-      if (!smoothPoint.current) {
-        smoothPoint.current = { x, y };
-      } else {
-        const alpha = 0.15;
+          if (!smoothPoint.current) {
+            smoothPoint.current = { x, y };
+          } else {
+            const alpha = 0.15;
 
-smoothPoint.current.x =
-  smoothPoint.current.x + (x - smoothPoint.current.x) * alpha;
+            smoothPoint.current.x +=
+              (x -
+                smoothPoint.current.x) *
+              alpha;
 
-smoothPoint.current.y =
-  smoothPoint.current.y + (y - smoothPoint.current.y) * alpha;
+            smoothPoint.current.y +=
+              (y -
+                smoothPoint.current.y) *
+              alpha;
+          }
+
+          x = smoothPoint.current.x;
+          y = smoothPoint.current.y;
+
+          setDot({ x, y });
+          drawLine(x, y);
+        } else {
+          lastPoint.current = null;
+          smoothPoint.current = null;
+        }
       }
-
-      x = smoothPoint.current.x;
-      y = smoothPoint.current.y;
-
-      setDot({ x, y });
-      drawLine(x, y);
-    } else {
-      lastPoint.current = null;
-      smoothPoint.current = null;
-    }
-  }
-};
+    };
 
     const drawLine = (x, y) => {
       const canvas = canvasRef.current;
       const ctx = canvas.getContext("2d");
 
       ctx.strokeStyle = "#111827";
-ctx.lineWidth = 2;
-ctx.lineCap = "round";
-ctx.lineJoin = "round";
-ctx.shadowColor = "rgba(0,0,0,0.2)";
-ctx.shadowBlur = 4;
+      ctx.lineWidth = 2;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+
       if (lastPoint.current) {
         ctx.beginPath();
         ctx.moveTo(
@@ -119,58 +126,63 @@ ctx.shadowBlur = 4;
   const clearCanvas = () => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    ctx.clearRect(
+      0,
+      0,
+      canvas.width,
+      canvas.height
+    );
 
     lastPoint.current = null;
     smoothPoint.current = null;
   };
 
   return (
-  <div className="app">
-    <h1 className="title">GestureDraw</h1>
+    <div className="app">
+      <h1 className="title">
+        GestureDraw
+      </h1>
 
-    <div className="container">
-      
-      {/* Camera */}
-      <div className="card webcam-box">
-        <Webcam
-          ref={webcamRef}
-          audio={false}
-          mirrored={true}
-          width={500}
-          height={400}
-          videoConstraints={{
-            width: 1280,
-            height: 720,
-            facingMode: "user",
-          }}
-        />
+      <div className="container">
 
-        {dot && (
-          <div
-            className="dot"
-            style={{
-              left: dot.x - 8,
-              top: dot.y - 8,
+        {/* Camera */}
+        <div className="card webcam-box">
+          <Webcam
+            ref={webcamRef}
+            audio={false}
+            mirrored={true}
+            screenshotFormat="image/jpeg"
+            videoConstraints={{
+              facingMode: "user",
             }}
           />
-        )}
+
+          {dot && (
+            <div
+              className="dot"
+              style={{
+                left: dot.x - 6,
+                top: dot.y - 6,
+              }}
+            />
+          )}
+        </div>
+
+        {/* Canvas */}
+        <div className="card">
+          <canvas
+            ref={canvasRef}
+            width={500}
+            height={400}
+          />
+
+          <button onClick={clearCanvas}>
+            Clear
+          </button>
+        </div>
+
       </div>
-
-      {/* Canvas */}
-      <div className="card">
-        <canvas
-          ref={canvasRef}
-          width={500}
-          height={400}
-        />
-
-        <button onClick={clearCanvas}>
-          Clear
-        </button>
-      </div>
-
     </div>
-  </div>
-);
+  );
 }
