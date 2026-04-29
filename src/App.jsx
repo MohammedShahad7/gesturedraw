@@ -37,7 +37,7 @@ export default function App() {
           }
         );
 
-      interval = setInterval(runDetection, 20);
+      interval = setInterval(runDetection, 33);
     };
 
     const runDetection = async () => {
@@ -67,11 +67,13 @@ export default function App() {
       if (!smoothPoint.current) {
         smoothPoint.current = { x, y };
       } else {
-        smoothPoint.current.x =
-          smoothPoint.current.x * 0.7 + x * 0.3;
+        const alpha = 0.15;
 
-        smoothPoint.current.y =
-          smoothPoint.current.y * 0.7 + y * 0.3;
+smoothPoint.current.x =
+  smoothPoint.current.x + (x - smoothPoint.current.x) * alpha;
+
+smoothPoint.current.y =
+  smoothPoint.current.y + (y - smoothPoint.current.y) * alpha;
       }
 
       x = smoothPoint.current.x;
@@ -90,11 +92,12 @@ export default function App() {
       const canvas = canvasRef.current;
       const ctx = canvas.getContext("2d");
 
-      ctx.strokeStyle = "black";
-      ctx.lineWidth = 4;   // smaller thickness
-      ctx.lineCap = "round";
-      ctx.lineJoin = "round";
-
+      ctx.strokeStyle = "#111827";
+ctx.lineWidth = 2;
+ctx.lineCap = "round";
+ctx.lineJoin = "round";
+ctx.shadowColor = "rgba(0,0,0,0.2)";
+ctx.shadowBlur = 4;
       if (lastPoint.current) {
         ctx.beginPath();
         ctx.moveTo(

@@ -53,6 +53,9 @@ body {
   border-radius: 14px;
   border: 1px solid #e5e7eb;
 }
+.webcam-box video {
+  transform: scaleX(-1);
+}
 
 /* Finger dot (soft but visible) */
 .dot {
@@ -69,6 +72,8 @@ canvas {
   background: #ffffff;
   border-radius: 12px;
   border: 1px solid #e5e7eb;
+  
+
 }
 
 /* Button (modern SaaS style) */
