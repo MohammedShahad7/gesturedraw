@@ -114,3 +114,51 @@ button:hover {
     padding: 11px;
   }
 }
+.win-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.win-box {
+  background: white;
+  padding: 30px 50px;
+  border-radius: 20px;
+  text-align: center;
+  animation: popIn 0.4s ease, fadeOut 0.4s ease 1.1s forwards;
+}
+
+.win-box h1 {
+  margin: 0;
+  font-size: 28px;
+}
+
+.win-box p {
+  margin-top: 10px;
+  color: gray;
+}
+
+@keyframes popIn {
+  from {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  to {
+    opacity: 0;
+    transform: scale(1.1);
+  }
+}
